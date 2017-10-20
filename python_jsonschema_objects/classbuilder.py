@@ -175,6 +175,13 @@ class ProtocolBase(collections.MutableMapping):
         #    self.validate()
 
     def __setattr__(self, name, val):
+        inverter = dict((v, k) for k,v in six.iteritems(self.__prop_names__))
+
+        # If name is a sanitized version (e.g. base_var) of the actual property (e.g. "base var"), invert it back so that the following lookups work properly.
+        # The bigger problem appears to be the fact that the __prop_names__ mapping is somewhat backwards...
+        if name in inverter:
+            name = inverter[name]
+
         if name in self.__object_attr_list__:
             object.__setattr__(self, name, val)
         elif name in self.__propinfo__:
@@ -546,7 +553,7 @@ class ClassBuilder(object):
         for prop, detail in properties.items():
             logger.debug(util.lazy_format("Handling property {0}.{1}",nm, prop))
             properties[prop]['raw_name'] = prop
-            name_translation[prop] = prop.replace('@', '')
+            name_translation[prop] = prop.replace('@', '').replace(' ', '_')
             prop = name_translation[prop]
 
             if detail.get('type', None) == 'object':
