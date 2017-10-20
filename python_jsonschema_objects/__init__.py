@@ -15,7 +15,11 @@ logger = logging.getLogger(__name__)
 import python_jsonschema_objects.classbuilder as classbuilder
 from python_jsonschema_objects.validators import ValidationError
 import python_jsonschema_objects.util
-import python_jsonschema_objects.markdown_support
+try:
+    # Don't make markdown support mandatory
+    import python_jsonschema_objects.markdown_support
+except ImportError:
+    pass
 
 __all__ = ['ObjectBuilder', 'markdown_support', 'ValidationError']
 
