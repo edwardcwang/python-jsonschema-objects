@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 
 logger.addHandler(logging.NullHandler())
 
-
+import hashlib
+import json
+def hash_dict(d):
+    return hashlib.sha1(json.dumps(d, sort_keys=True).encode("utf-8")).hexdigest()
 
 # Long is no longer a thing in python3.x
 if sys.version_info > (3,):
@@ -484,10 +487,14 @@ class ClassBuilder(object):
         elif (clsdata.get('type', None) == 'object' or
               clsdata.get('properties', None) is not None or
               clsdata.get('additionalProperties', False)):
-            self.resolved[uri] = self._build_object(
-                uri,
-                clsdata,
-                parent,**kw)
+            if uri in self.resolved:
+                if self.resolved[uri].__clsdata_hash__ != hash_dict(clsdata):
+                    raise KeyError("uri {0} already exists and is different".format(uri))
+            else:
+                self.resolved[uri] = self._build_object(
+                    uri,
+                    clsdata,
+                    parent,**kw)
             return self.resolved[uri]
         elif clsdata.get('type') in ('integer', 'number', 'string', 'boolean', 'null'):
             self.resolved[uri] = self._build_literal(
@@ -523,6 +530,7 @@ class ClassBuilder(object):
 
     def _build_object(self, nm, clsdata, parents,**kw):
         logger.debug(util.lazy_format("Building object {0}", nm))
+        clsdata_hash = hash_dict(clsdata)
 
         props = {}
 
@@ -610,6 +618,8 @@ class ClassBuilder(object):
                                     for i, item_detail in enumerate(detail['items']['oneOf'])]
                                     )
                             else:
+                                # Re-use existing submodules if possible
+                                uri = detail['items']['title']
                                 typ = self.construct(uri, detail['items'])
                             propdata = {'type': 'array',
                                         'validator': python_jsonschema_objects.wrapper_types.ArrayWrapper.create(uri, item_constraint=typ,
@@ -673,6 +683,7 @@ class ClassBuilder(object):
                                            .format(nm, invalid_requires))
 
         props['__required__'] = required
+        props['__clsdata_hash__'] = clsdata_hash
         if required and kw.get("strict"):
             props['__strict__'] = True
         cls = type(str(nm.split('/')[-1]), tuple(parents), props)
