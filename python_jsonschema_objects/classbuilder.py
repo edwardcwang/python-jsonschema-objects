@@ -554,20 +554,26 @@ class ClassBuilder(object):
             logger.debug(util.lazy_format("Handling property {0}.{1}",nm, prop))
             properties[prop]['raw_name'] = prop
             name_translation[prop] = prop.replace('@', '').replace(' ', '_')
+            raw_prop = prop
             prop = name_translation[prop]
 
             if detail.get('type', None) == 'object':
-                uri = "{0}/{1}_{2}".format(nm,
-                                           prop, "<anonymous>")
+                #~ uri = "{0}/{1}_{2}".format(nm,
+                                           #~ prop, "<anonymous>")
+                # Re-use existing submodules if possible
+                uri = detail['title']
+                # Scrub raw_name since that's a function of this property but not of the substructure.
+                detail_clean = dict(detail)
+                del detail_clean['raw_name']
                 self.resolved[uri] = self.construct(
                     uri,
-                    detail,
+                    detail_clean,
                     (ProtocolBase,))
 
                 props[prop] = make_property(prop,
                     {'type': self.resolved[uri]},
                       self.resolved[uri].__doc__)
-                properties[prop]['type'] = self.resolved[uri]
+                properties[raw_prop]['type'] = self.resolved[uri]
 
             elif 'type' not in detail and '$ref' in detail:
                 ref = detail['$ref']
