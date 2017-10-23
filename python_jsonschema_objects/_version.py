@@ -47,8 +47,8 @@ class NotThisMethod(Exception):
     pass
 
 
-LONG_VERSION_PY = {}
-HANDLERS = {}
+LONG_VERSION_PY = {} # type: dict
+HANDLERS = {} # type: dict
 
 
 def register_vcs_handler(vcs, method):  # decorator

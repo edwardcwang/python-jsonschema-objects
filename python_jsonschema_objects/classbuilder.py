@@ -40,9 +40,9 @@ class ProtocolBase(collections.MutableMapping):
         validators.ValidationError: If any of the provided properties
             do not pass validation
     """
-    __propinfo__ = {}
-    __required__ = set()
-    __object_attr_list__ = set(["_properties", "_extended_properties"])
+    __propinfo__ = {} # type: dict
+    __required__ = set() # type: set
+    __object_attr_list__ = set(["_properties", "_extended_properties"]) # type: set
 
     def as_dict(self):
         """ Return a dictionary containing the current values
