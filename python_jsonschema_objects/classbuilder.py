@@ -175,6 +175,10 @@ class ProtocolBase(collections.MutableMapping):
         #    self.validate()
 
     def __setattr__(self, name, val):
+        if name.startswith("__donttouch_"):
+            object.__setattr__(self, name, val)
+            return
+
         inverter = dict((v, k) for k,v in six.iteritems(self.__prop_names__))
 
         # If name is a sanitized version (e.g. base_var) of the actual property (e.g. "base var"), invert it back so that the following lookups work properly.
@@ -226,6 +230,9 @@ class ProtocolBase(collections.MutableMapping):
         return delattr(self, key)
 
     def __getattr__(self, name):
+        if name.startswith("__donttouch_"):
+            return object.__getattr__(name)
+
         if name in self.__prop_names__:
             raise KeyError(name)
         if name not in self._extended_properties:
