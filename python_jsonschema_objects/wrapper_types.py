@@ -9,7 +9,7 @@ from python_jsonschema_objects.validators import registry, ValidationError
 logger = logging.getLogger(__name__)
 
 
-class ArrayWrapper(collections.MutableSequence):
+class ArrayWrapper(collections.abc.MutableSequence):
     """ A wrapper for array-like structures.
 
     This implements all of the array like behavior that one would want,
@@ -41,7 +41,7 @@ class ArrayWrapper(collections.MutableSequence):
             return self.for_json() == other
 
     def __init__(self, ary):
-        if isinstance(ary, (list, tuple, collections.Sequence)):
+        if isinstance(ary, (list, tuple, collections.abc.Sequence)):
             self.data = ary
             self._dirty = True
             self._typed = None
